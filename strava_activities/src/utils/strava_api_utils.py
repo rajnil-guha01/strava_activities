@@ -3,7 +3,7 @@ import time
 from datetime import datetime, timedelta
 import sys
 
-def check_token_expiry(client_id: int, scope: str, catalog: str, schema: str, token_table: str) -> str:
+def check_token_expiry(client_id: str, scope: str, catalog: str, schema: str, token_table: str) -> str:
     """
     Check and refresh Strava API access token if expired.
     Parameters:
@@ -52,8 +52,8 @@ def check_token_expiry(client_id: int, scope: str, catalog: str, schema: str, to
         strava_token_expire_time = token_response['expires_at']
         # Update the new token details back to the tokens table
         update_query = f"""
-        update {token_table_name} set access_token = '{strava_access_token}, refresh_token = '{strava_refresh_token}',
-        expires_at = {strava_token_expire_time} where athlete_id = {client_id} and scope = '{scope}'
+        update {token_table_name} set access_token = '{strava_access_token}', refresh_token = '{strava_refresh_token}',
+        expires_at = {strava_token_expire_time} where athlete_id = '{client_id}' and scope = '{scope}'
         """
         spark.sql(update_query)
         print("Strava access token refreshed and updated in the tokens table.")
