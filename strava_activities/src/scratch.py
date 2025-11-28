@@ -2,6 +2,7 @@ import requests
 import os
 from datetime import datetime, timedelta
 import time
+from pathlib import Path
 
 def strava_api_examples():
 
@@ -43,5 +44,8 @@ def strava_api_examples():
     )
     print(response.json())
 
+def path_test():
+    print(Path('..').resolve())
+
 if __name__ == '__main__':
-    strava_api_examples()
+    path_test()

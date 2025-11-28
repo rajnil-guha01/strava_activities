@@ -3,7 +3,7 @@ import time
 from datetime import datetime, timedelta
 import sys
 
-def check_token_expiry(client_id: str, scope: str, catalog: str, schema: str, token_table: str) -> str:
+def check_token_expiry(client_id: str, scope: str, catalog: str, schema: str, token_table: str, secret_scope: str) -> str:
     """
     Check and refresh Strava API access token if expired.
     Parameters:
@@ -32,7 +32,7 @@ def check_token_expiry(client_id: str, scope: str, catalog: str, schema: str, to
     strava_refresh_token = token_details['refresh_token']
     current_unix_time = time.time()
     # Fetch client secret from databricks secrets
-    strava_client_secret = dbutils.secrets.get(scope = 'strava_secrets', key = 'STRAVA_CLIENT_SECRET')
+    strava_client_secret = dbutils.secrets.get(scope = secret_scope, key = 'STRAVA_CLIENT_SECRET')
 
     if strava_token_expire_time and strava_token_expire_time < current_unix_time:
         # Token has expired and its time to request for a new token
@@ -60,7 +60,7 @@ def check_token_expiry(client_id: str, scope: str, catalog: str, schema: str, to
     
     return strava_access_token
 
-def get_athlete_profile_details(client_id: str, scope: str, catalog: str, schema: str, token_table: str) -> dict:
+def get_athlete_profile_details(client_id: str, scope: str, catalog: str, schema: str, token_table: str, secret_scope: str) -> dict:
     """
     Get athlete profile details from Strava API.
     Parameters:
@@ -73,7 +73,8 @@ def get_athlete_profile_details(client_id: str, scope: str, catalog: str, schema
     - dict: Athlete profile details from Strava API.
     """
     # Fetch valid access token
-    strava_access_token = check_token_expiry(client_id = client_id, scope = scope, catalog = catalog, schema = schema, token_table = token_table)
+    strava_access_token = check_token_expiry(client_id = client_id, scope = scope, catalog = catalog, schema = schema, 
+                                             token_table = token_table, secret_scope = secret_scope)
     print("Getting athlete profile details from Strava API...")
     response = requests.get(
         "https://www.strava.com/api/v3/athlete",

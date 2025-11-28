@@ -1,4 +1,5 @@
 from src.utils.strava_api_utils import get_athlete_profile_details
+from src.utils.common_utils import get_config_file_path
 
 from pyspark.sql.functions import *
 from pyspark.sql.types import *
@@ -6,6 +7,7 @@ import yaml
 import argparse
 import sys
 import logging
+from pathlib import Path
 
 config = None
 
@@ -20,7 +22,8 @@ def main():
     config_file_name = args.config_file_name
 
     # Load configuration from YAML file
-    with open(f'src/resources/config/{config_file_name}', 'r') as f:
+    config_file_absolute_path = get_config_file_path(config_file_name = config_file_name)
+    with open(config_file_absolute_path, 'r') as f:
         config = yaml.safe_load(f)
     
     # Get Strava athlete profile details from Strava API
@@ -29,13 +32,20 @@ def main():
     catalog = config['databricks']['catalog_name']
     schema = config['databricks']['schema_name']
     token_table = config['databricks']['token_table']['token_table_name']
-    athlete_profile_data = get_athlete_profile_details(
-        client_id = strava_client_id,
-        scope = athlete_profile_scope,
-        catalog = catalog,
-        schema = schema,
-        token_table = token_table
-    )
+    strava_dbx_secret_scope = config['databricks']['secret_scope']
+
+    try:
+        athlete_profile_data = get_athlete_profile_details(
+            client_id = strava_client_id,
+            scope = athlete_profile_scope,
+            catalog = catalog,
+            schema = schema,
+            token_table = token_table,
+            secret_scope = strava_dbx_secret_scope
+        )
+    except Exception as e:
+        print(f"Error fetching athlete profile details: {e}")
+        sys.exit(0)
 
     # Convert athlete profile data to Spark DataFrame and write data to raw table
     athlete_profile_df = spark.createDataFrame([athlete_profile_data], schema = ['json_data'])
