@@ -1,0 +1,43 @@
+# This workflow validates, deploys, and runs the specified bundle
+# within a production target named "prod".
+name: 'This workflow deploys the strava data engineering project to the Databricks free edition owned by Rajnil Guha'
+
+# Trigger this workflow whenever a pull request is pushed to the repo's
+# main branch.
+on:
+  push:
+    branches:
+      - development
+jobs:
+    validate:
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v4
+  
+        - name: Databricks CLI Setup
+          uses: databricks/setup-cli@main
+  
+        - name: Validate bundle
+          env:
+            DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_FREE_EDITION_TOKEN }}
+            DATABRICKS_HOST: ${{ secrets.DATABRICKS_FREE_EDITION_HOST }}
+          run: databricks bundle validate --target dev
+          working-directory: './strava_activities'
+          
+    deploy:
+      needs: validate
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v4
+  
+        - name: Databricks CLI Setup
+          uses: databricks/setup-cli@main
+  
+        - name: Deploy bundle
+          env:
+            DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_FREE_EDITION_TOKEN }}
+            DATABRICKS_HOST: ${{ secrets.DATABRICKS_FREE_EDITION_HOST }}
+          run: databricks bundle deploy --target dev
+          working-directory: './strava_activities'
