@@ -18,6 +18,10 @@ targets:
     default: true
     workspace:
       host: https://dbc-8db3bb0f-f960.cloud.databricks.com
+      root_path: /Workspace/Users/rajnil94.guha@gmail.com/dev/.bundle/${bundle.name}/${bundle.target}
+    presets:
+      name_prefix: dev_${workspace.current_user.short_name}
+      source_linked_deployment: false
 
   prod:
     mode: production

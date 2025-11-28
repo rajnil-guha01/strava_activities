@@ -1,0 +1,4 @@
+variables:
+  config_file_name: 
+    description: "Configuration file name for the environment."
+    default: "dev_config.yaml"

@@ -1,0 +1,22 @@
+resources:
+  jobs:
+    strava_athlete_profile:
+      name: strava_athlete_profile
+      tasks:
+        - task_key: strava_athlete_profile_raw
+          spark_python_task:
+            python_file: ../../src/etl/strava_athelete_profile_raw_app.py
+            parameters:
+              - --config_file_name
+              - ${var.config_file_name}
+          email_notifications:
+            on_failure:
+              - rajnil94.guha@gmail.com
+          environment_key: Default
+      queue:
+        enabled: true
+      environments:
+        - environment_key: Default
+          spec:
+            environment_version: "4"
+      performance_target: PERFORMANCE_OPTIMIZED
