@@ -59,3 +59,25 @@ def check_token_expiry(client_id: str, scope: str, catalog: str, schema: str, to
         print("Strava access token refreshed and updated in the tokens table.")
     
     return strava_access_token
+
+def get_athlete_profile_details(client_id: str, scope: str, catalog: str, schema: str, token_table: str) -> dict:
+    """
+    Get athlete profile details from Strava API.
+    Parameters:
+    - client_id (int): Strava client ID (athlete ID).
+    - scope (str): Scope of the token.
+    - catalog (str): Database catalog name.
+    - schema (str): Database schema name.
+    - token_table (str): Table name where tokens are stored.
+    Returns:
+    - dict: Athlete profile details from Strava API.
+    """
+    # Fetch valid access token
+    strava_access_token = check_token_expiry(client_id = client_id, scope = scope, catalog = catalog, schema = schema, token_table = token_table)
+    print("Getting athlete profile details from Strava API...")
+    response = requests.get(
+        "https://www.strava.com/api/v3/athlete",
+        headers = {"Authorization": f"Bearer {strava_access_token}"}
+    )
+    print("Athlete profile details fetched successfully.")
+    return response.json()

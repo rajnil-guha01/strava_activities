@@ -7,7 +7,7 @@ def strava_api_examples():
 
     # check if current time exceeds the last token expiration time
     response_for_token = None
-    strava_client_id = os.environ.get('STRAVA_CLIENT_ID')
+    strava_client_id = str(os.environ.get('STRAVA_CLIENT_ID'))
     strava_client_secret = os.environ.get('STRAVA_CLIENT_SECRET')
     strava_refresh_token = os.environ.get('STRAVA_REFRESH_TOKEN')
     strava_token_expire_time = int(os.environ.get('STRAVA_TOKEN_EXPIRE_TIME'))
@@ -20,9 +20,10 @@ def strava_api_examples():
     print(f'strava_client_id : {strava_client_id}')
 
     # check if current time exceeds the last token expiration time
-    # if strava_token_expire_time and strava_token_expire_time < current_unix_time:
-    if strava_token_expire_time:
+    if strava_token_expire_time and strava_token_expire_time < current_unix_time:
+    # if strava_token_expire_time:
         # Token has expired and its time to request for a new token
+        print("Strava access token has expired. Refreshing the token...")
         response_for_token = requests.post(
             "https://www.strava.com/api/v3/oauth/token",
             params = {
