@@ -1,5 +1,5 @@
-from src.strava_activities.utils.strava_api_utils import get_athlete_profile_details
-from src.strava_activities.utils.common_utils import get_config_file_path
+from strava_activities.utils.strava_api_utils import get_athlete_profile_details
+from strava_activities.utils.common_utils import get_config_file_path
 
 from pyspark.sql.functions import *
 from pyspark.sql.types import *

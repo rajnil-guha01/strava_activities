@@ -555,7 +555,7 @@ wheels = [
 ]
 
 [[package]]
-name = "strava-activities"
+name = "strava_activities"
 version = "0.0.1"
 source = { editable = "." }
 
