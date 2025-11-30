@@ -3,9 +3,6 @@ name = "strava_activities"
 version = "0.0.1"
 authors = [{ name = "rajnil94.guha@gmail.com" }]
 requires-python = ">=3.10,<=3.13"
-dependencies = [
-    "yaml",
-]
 
 [dependency-groups]
 dev = [
