@@ -35,4 +35,4 @@ build-backend = "hatchling.build"
 packages = ["src"]
 
 [project.scripts]
-strava_athlete_profile_raw = "src.etl.strava_athelete_profile_raw_app:main"
+strava_athlete_profile_raw = "src.strava_activities.etl.strava_athelete_profile_raw_app:main"
