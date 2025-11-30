@@ -8,21 +8,8 @@ on:
   push:
     branches:
       - development
-jobs:
-    install_uv:
-      runs-on: ubuntu-latest
-      steps:
-        - name: Checkout code
-          uses: actions/checkout@v4
-          
-        - name: Install uv
-          run: curl -LsSf https://astral.sh/uv/install.sh | sh
-
-        - name: Add uv to PATH
-          run: echo "$HOME/.local/bin" >> $GITHUB_PATH
-          
+jobs:     
     validate:
-      needs: install_uv
       runs-on: ubuntu-latest
       steps:
         - name: Checkout code
@@ -44,6 +31,12 @@ jobs:
       steps:
         - name: Checkout code
           uses: actions/checkout@v4
+
+        - name: Install uv
+          run: curl -LsSf https://astral.sh/uv/install.sh | sh
+
+        - name: Add uv to PATH
+          run: echo "$HOME/.local/bin" >> $GITHUB_PATH
   
         - name: Databricks CLI Setup
           uses: databricks/setup-cli@main
@@ -54,5 +47,6 @@ jobs:
             DATABRICKS_HOST: ${{ secrets.DATABRICKS_FREE_EDITION_HOST }}
           run: databricks bundle deploy --target dev
           working-directory: './strava_activities'
+
 
 
