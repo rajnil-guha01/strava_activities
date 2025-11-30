@@ -1,22 +1,28 @@
 resources:
   jobs:
-    strava_athlete_profile:
-      name: strava_athlete_profile
+    demo_strava_raw:
+      name: demo_strava_raw
       tasks:
         - task_key: strava_athlete_profile_raw
-          spark_python_task:
-            python_file: ../../src/etl/strava_athelete_profile_raw_app.py
+          python_wheel_task:
+            package_name: strava_activities
+            entry_point: strava_athlete_profile_raw
             parameters:
               - --config_file_name
               - ${var.config_file_name}
           email_notifications:
             on_failure:
               - rajnil94.guha@gmail.com
-          environment_key: Default
+          environment_key: strava_athlete_profile_raw_environment
       queue:
         enabled: true
       environments:
         - environment_key: Default
           spec:
+            environment_version: "4"
+        - environment_key: strava_athlete_profile_raw_environment
+          spec:
+            dependencies:
+              - ../../dist/strava_activities-0.0.1-py3-none-any.whl
             environment_version: "4"
       performance_target: PERFORMANCE_OPTIMIZED
