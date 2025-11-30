@@ -22,7 +22,5 @@ resources:
             environment_version: "4"
         - environment_key: strava_athlete_profile_raw_environment
           spec:
-            dependencies:
-              - ../../dist/strava_activities-0.0.1-py3-none-any.whl
             environment_version: "4"
       performance_target: PERFORMANCE_OPTIMIZED
