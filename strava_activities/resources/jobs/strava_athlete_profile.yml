@@ -1,7 +1,7 @@
 resources:
   jobs:
-    demo_strava_raw:
-      name: demo_strava_raw
+    strava_athlete_profile:
+      name: strava_athlete_profile
       tasks:
         - task_key: strava_athlete_profile_raw
           python_wheel_task:
