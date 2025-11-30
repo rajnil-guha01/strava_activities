@@ -10,9 +10,6 @@ resources:
             parameters:
               - --config_file_name
               - ${var.config_file_name}
-          email_notifications:
-            on_failure:
-              - rajnil94.guha@gmail.com
           environment_key: Default
       queue:
         enabled: true
