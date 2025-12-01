@@ -8,3 +8,6 @@ variables:
   strava_client_secret_name:
     description: Secret name for Strava API client secret.
     default: STRAVA_CLIENT_SECRET
+  secret_path:
+    description: Path to the secret file.
+    default: /Volumes/data_engineering/strava_dev/strava_secrets/secret.txt

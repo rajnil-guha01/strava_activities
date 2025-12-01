@@ -24,8 +24,10 @@ def main():
     # Parse command line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_file_name', required = True, help = 'environment config file name e.g. dev_config.yaml for dev environment')
+    parser.add_argument('--secret_path', required = True, help = 'Path to the secret file.')
     args = parser.parse_args()
     config_file_name = args.config_file_name
+    secure_path = args.secret_path
 
     # Load configuration from YAML file
     config_file_absolute_path = get_config_file_path(config_file_name = config_file_name)
@@ -48,7 +50,7 @@ def main():
             catalog = catalog,
             schema = schema,
             token_table = token_table,
-            secret_scope = strava_dbx_secret_scope
+            secure_path = secure_path
         )
     except Exception as e:
         print(f"Error fetching athlete profile details: {e}")
