@@ -34,7 +34,7 @@ def check_token_expiry(spark: SparkSession, client_id: str, scope: str, catalog:
     strava_refresh_token = token_details['refresh_token']
     current_unix_time = time.time()
     # Fetch client secret from databricks secrets
-    
+
     # strava_client_secret = dbutils.secrets.get(scope = secret_scope, key = 'STRAVA_CLIENT_SECRET')
     # strava_client_secret = os.environ.get('STRAVA_CLIENT_SECRET')
     with open(secure_path, "r") as f:
@@ -87,4 +87,5 @@ def get_athlete_profile_details(spark: SparkSession, client_id: str, scope: str,
         headers = {"Authorization": f"Bearer {strava_access_token}"}
     )
     print("Athlete profile details fetched successfully.")
-    return response.json()
+    print(response.json())
+    return response
