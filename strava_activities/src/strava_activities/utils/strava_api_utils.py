@@ -3,6 +3,7 @@ import requests
 import time
 from datetime import datetime, timedelta
 import sys
+import os
 
 def check_token_expiry(spark: SparkSession, client_id: str, scope: str, catalog: str, schema: str, token_table: str, secret_scope: str) -> str:
     """
@@ -33,7 +34,8 @@ def check_token_expiry(spark: SparkSession, client_id: str, scope: str, catalog:
     strava_refresh_token = token_details['refresh_token']
     current_unix_time = time.time()
     # Fetch client secret from databricks secrets
-    strava_client_secret = dbutils.secrets.get(scope = secret_scope, key = 'STRAVA_CLIENT_SECRET')
+    # strava_client_secret = dbutils.secrets.get(scope = secret_scope, key = 'STRAVA_CLIENT_SECRET')
+    strava_client_secret = os.environ.get('STRAVA_CLIENT_SECRET')
 
     if strava_token_expire_time and strava_token_expire_time < current_unix_time:
         # Token has expired and its time to request for a new token

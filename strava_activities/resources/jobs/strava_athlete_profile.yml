@@ -10,6 +10,8 @@ resources:
             parameters:
               - --config_file_name
               - ${var.config_file_name}
+          environment_variables:
+            STRAVA_CLIENT_SECRET: "{{secrets/${var.strava_secret_scope}/${var.strava_client_secret_name}}}"
           environment_key: strava_athlete_profile_raw_environment
       queue:
         enabled: true
