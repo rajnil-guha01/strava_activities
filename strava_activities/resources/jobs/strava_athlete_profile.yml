@@ -11,10 +11,8 @@ resources:
               - --config_file_name
               - ${var.config_file_name}
           environment_key: strava_athlete_profile_raw_environment
-          new_cluster:
-            node_type_id: "serverless"
-            environment_variables:
-              STRAVA_API_KEY: "{{secrets/${var.strava_secret_scope}/${var.strava_client_secret_name}}}"
+          environment_vars:
+            STRAVA_CLIENT_SECRET: "{{secrets/${var.strava_secret_scope}/${var.strava_client_secret_name}}}"
       queue:
         enabled: true
       environments:
