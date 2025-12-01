@@ -1,9 +1,10 @@
+from pyspark.sql import SparkSession
 import requests
 import time
 from datetime import datetime, timedelta
 import sys
 
-def check_token_expiry(client_id: str, scope: str, catalog: str, schema: str, token_table: str, secret_scope: str) -> str:
+def check_token_expiry(spark: SparkSession, client_id: str, scope: str, catalog: str, schema: str, token_table: str, secret_scope: str) -> str:
     """
     Check and refresh Strava API access token if expired.
     Parameters:
@@ -60,7 +61,7 @@ def check_token_expiry(client_id: str, scope: str, catalog: str, schema: str, to
     
     return strava_access_token
 
-def get_athlete_profile_details(client_id: str, scope: str, catalog: str, schema: str, token_table: str, secret_scope: str) -> dict:
+def get_athlete_profile_details(spark: SparkSession, client_id: str, scope: str, catalog: str, schema: str, token_table: str, secret_scope: str) -> dict:
     """
     Get athlete profile details from Strava API.
     Parameters:
@@ -73,8 +74,8 @@ def get_athlete_profile_details(client_id: str, scope: str, catalog: str, schema
     - dict: Athlete profile details from Strava API.
     """
     # Fetch valid access token
-    strava_access_token = check_token_expiry(client_id = client_id, scope = scope, catalog = catalog, schema = schema, 
-                                             token_table = token_table, secret_scope = secret_scope)
+    strava_access_token = check_token_expiry(spark = spark, client_id = client_id, scope = scope, catalog = catalog, 
+                                             schema = schema, token_table = token_table, secret_scope = secret_scope)
     print("Getting athlete profile details from Strava API...")
     response = requests.get(
         "https://www.strava.com/api/v3/athlete",
