@@ -5,7 +5,7 @@ resources:
       tasks:
         - task_key: strava_athlete_profile_raw
           python_wheel_task:
-            package_name: strava_activities
+            package_name: strava-activities
             entry_point: strava_athlete_profile_raw
             parameters:
               - --config_file_name
