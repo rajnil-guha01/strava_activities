@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import sys
 import os
 
-def check_token_expiry(spark: SparkSession, client_id: str, scope: str, catalog: str, schema: str, token_table: str, secret_scope: str) -> str:
+def check_token_expiry(spark: SparkSession, client_id: str, scope: str, catalog: str, schema: str, token_table: str, secure_path: str) -> str:
     """
     Check and refresh Strava API access token if expired.
     Parameters:
@@ -34,8 +34,11 @@ def check_token_expiry(spark: SparkSession, client_id: str, scope: str, catalog:
     strava_refresh_token = token_details['refresh_token']
     current_unix_time = time.time()
     # Fetch client secret from databricks secrets
+    
     # strava_client_secret = dbutils.secrets.get(scope = secret_scope, key = 'STRAVA_CLIENT_SECRET')
-    strava_client_secret = os.environ.get('STRAVA_CLIENT_SECRET')
+    # strava_client_secret = os.environ.get('STRAVA_CLIENT_SECRET')
+    with open(secure_path, "r") as f:
+        strava_client_secret = f.read().strip()
 
     if strava_token_expire_time and strava_token_expire_time < current_unix_time:
         # Token has expired and its time to request for a new token
@@ -63,7 +66,7 @@ def check_token_expiry(spark: SparkSession, client_id: str, scope: str, catalog:
     
     return strava_access_token
 
-def get_athlete_profile_details(spark: SparkSession, client_id: str, scope: str, catalog: str, schema: str, token_table: str, secret_scope: str) -> dict:
+def get_athlete_profile_details(spark: SparkSession, client_id: str, scope: str, catalog: str, schema: str, token_table: str, secure_path: str) -> dict:
     """
     Get athlete profile details from Strava API.
     Parameters:
@@ -77,7 +80,7 @@ def get_athlete_profile_details(spark: SparkSession, client_id: str, scope: str,
     """
     # Fetch valid access token
     strava_access_token = check_token_expiry(spark = spark, client_id = client_id, scope = scope, catalog = catalog, 
-                                             schema = schema, token_table = token_table, secret_scope = secret_scope)
+                                             schema = schema, token_table = token_table, secure_path = secure_path)
     print("Getting athlete profile details from Strava API...")
     response = requests.get(
         "https://www.strava.com/api/v3/athlete",
