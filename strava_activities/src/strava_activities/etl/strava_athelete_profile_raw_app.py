@@ -9,6 +9,7 @@ import argparse
 import sys
 import logging
 from pathlib import Path
+import json
 
 config = None
 
@@ -57,10 +58,18 @@ def main():
         sys.exit(0)
 
     # Convert athlete profile data to Spark DataFrame and write data to raw table
-    athlete_profile_df = spark.createDataFrame([athlete_profile_data], schema = ['json_data'])
-    athlete_profile_df = athlete_profile_df.withColumn('athlete_profile', from_json(to_json('json_data'), 'variant')) \
+    payload = athlete_profile_data.text
+    # Create a small DF with one row containing the JSON string
+    json_df = spark.createDataFrame([(payload,)], ["json_str"])
+
+    # Infer a Spark schema from the JSON string and parse it
+    parsed_df = json_df.select(
+        from_json(col("json_str"), schema_of_json(lit(payload))).alias("data")
+    )
+    # athlete_profile_df = spark.createDataFrame([athlete_profile_data], ['json_data'])
+    athlete_profile_df = parsed_df.withColumn('athlete_profile', from_json(to_json('data'), 'variant')) \
         .withColumn('load_ts', current_timestamp()) \
-        .drop('json_data')
+        .drop('data')
     
     raw_table = config['databricks']['raw_table']['raw_table_name']
     raw_table_name = f"{catalog}.{schema}.{raw_table}"
