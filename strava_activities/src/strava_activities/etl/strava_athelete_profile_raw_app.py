@@ -1,6 +1,7 @@
 from strava_activities.utils.strava_api_utils import get_athlete_profile_details
 from strava_activities.utils.common_utils import get_config_file_path
 
+from pyspark.sql import SparkSession
 from pyspark.sql.functions import *
 from pyspark.sql.types import *
 import yaml
@@ -15,6 +16,11 @@ def main():
     # declare global variables
     global config
 
+    # Define Spark session
+    spark = SparkSession.builder \
+        .appName("Strava Athlete Profile Pipeline") \
+        .getOrCreate()
+
     # Parse command line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_file_name', required = True, help = 'environment config file name e.g. dev_config.yaml for dev environment')
@@ -25,7 +31,7 @@ def main():
     config_file_absolute_path = get_config_file_path(config_file_name = config_file_name)
     with open(config_file_absolute_path, 'r') as f:
         config = yaml.safe_load(f)
-    
+
     # Get Strava athlete profile details from Strava API
     strava_client_id = config['strava_api']['client_id']
     athlete_profile_scope = config['strava_api']['athlete_profile_scope']
@@ -36,6 +42,7 @@ def main():
 
     try:
         athlete_profile_data = get_athlete_profile_details(
+            spark = spark,
             client_id = strava_client_id,
             scope = athlete_profile_scope,
             catalog = catalog,
