@@ -30,9 +30,23 @@ resources:
               - --job_run_time
               - "{{job.start_time.iso_datetime}}"
           environment_key: strava_athlete_profile_raw_environment
-        - task_key: remove_secret_file
+        - task_key: strava_athlete_profile_cleanse
           depends_on:
             - task_key: strava_athlete_profile_raw
+          python_wheel_task:
+            package_name: strava-activities
+            entry_point: strava_athlete_profile_cleanse
+            parameters:
+              - --config_file_name
+              - ${var.config_file_name}
+              - --job_run_date
+              - "{{job.start_time.iso_date}}"
+              - --job_run_time
+              - "{{job.start_time.iso_datetime}}"
+          environment_key: strava_athlete_profile_raw_environment
+        - task_key: remove_secret_file
+          depends_on:
+            - task_key: strava_athlete_profile_cleanse
           spark_python_task:
             python_file: ../../src/strava_activities/etl/remove_secret_file.py
             parameters:
