@@ -7,9 +7,6 @@ from pyspark.sql.types import *
 import yaml
 import argparse
 import sys
-import logging
-from pathlib import Path
-import json
 
 config = None
 
@@ -34,7 +31,8 @@ def main():
     run_date = args.job_run_date
     run_time = args.job_run_time
 
-    print(f"Job run date: {args.job_run_date}")
+    print(f"Job run date: {run_date}")
+    print(f"Job run time: {run_time}")
 
     # Load configuration from YAML file
     config_file_absolute_path = get_config_file_path(config_file_name = config_file_name)
