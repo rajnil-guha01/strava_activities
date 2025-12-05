@@ -87,5 +87,4 @@ def get_athlete_profile_details(spark: SparkSession, client_id: str, scope: str,
         headers = {"Authorization": f"Bearer {strava_access_token}"}
     )
     print("Athlete profile details fetched successfully.")
-    print(response.json())
     return response

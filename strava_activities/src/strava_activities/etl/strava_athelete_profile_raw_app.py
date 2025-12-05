@@ -26,9 +26,12 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_file_name', required = True, help = 'environment config file name e.g. dev_config.yaml for dev environment')
     parser.add_argument('--secret_path', required = True, help = 'Path to the secret file.')
+    parser.add_argument('--job_run_date', required = True, help = 'Job run date.')
     args = parser.parse_args()
     config_file_name = args.config_file_name
     secure_path = args.secret_path
+
+    print(f"Job run date: {args.job_run_date}")
 
     # Load configuration from YAML file
     config_file_absolute_path = get_config_file_path(config_file_name = config_file_name)
@@ -66,7 +69,6 @@ def main():
     parsed_df = json_df.select(
         from_json(col("json_str"), schema_of_json(lit(payload))).alias("data")
     )
-    # athlete_profile_df = spark.createDataFrame([athlete_profile_data], ['json_data'])
     athlete_profile_df = parsed_df.withColumn('athlete_profile', from_json(to_json('data'), 'variant')) \
         .withColumn('load_ts', current_timestamp()) \
         .drop('data')
