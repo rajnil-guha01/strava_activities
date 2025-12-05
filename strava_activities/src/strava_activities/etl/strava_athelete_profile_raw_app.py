@@ -26,10 +26,13 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_file_name', required = True, help = 'environment config file name e.g. dev_config.yaml for dev environment')
     parser.add_argument('--secret_path', required = True, help = 'Path to the secret file.')
-    parser.add_argument('--job_run_date', required = True, help = 'Job run date.')
+    parser.add_argument('--job_run_date', required = True, help = 'Job run date. Format: YYYY-MM-DD')
+    parser.add_argument('--job_run_time', required = True, help = 'Job run time. Format: YYYY-MM-DDTHH:MM:SS')
     args = parser.parse_args()
     config_file_name = args.config_file_name
     secure_path = args.secret_path
+    run_date = args.job_run_date
+    run_time = args.job_run_time
 
     print(f"Job run date: {args.job_run_date}")
 
@@ -70,7 +73,8 @@ def main():
         from_json(col("json_str"), schema_of_json(lit(payload))).alias("data")
     )
     athlete_profile_df = parsed_df.withColumn('athlete_profile', from_json(to_json('data'), 'variant')) \
-        .withColumn('load_ts', current_timestamp()) \
+        .withColumn('run_date', lit(run_date).cast('date')) \
+        .withColumn('run_time', lit(run_time).cast('timestamp')) \
         .drop('data')
     
     raw_table = config['databricks']['raw_table']['raw_table_name']

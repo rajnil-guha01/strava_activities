@@ -27,6 +27,8 @@ resources:
               - ${var.secret_path}
               - --job_run_date
               - "{{job.start_time.iso_date}}"
+              - --job_run_time
+              - "{{job.start_time.iso_datetime}}"
           environment_key: strava_athlete_profile_raw_environment
         - task_key: remove_secret_file
           depends_on:
