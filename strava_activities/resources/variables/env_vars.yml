@@ -11,3 +11,6 @@ variables:
   secret_path:
     description: Path to the secret file.
     default: /Volumes/data_engineering/strava_dev/strava_secrets/secret.txt
+  load_type:
+    description: Type of load to perform - Full (F) or Incremental (I).
+    default: F
