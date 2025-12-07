@@ -75,7 +75,7 @@ def main():
         .withColumn('run_time', lit(run_time).cast('timestamp')) \
         .drop('data')
     
-    raw_table = config['databricks']['raw_table']['raw_table_name']
+    raw_table = config['databricks']['athlete_profile']['raw_table']['raw_table_name']
     raw_table_name = f"{catalog}.{schema}.{raw_table}"
     athlete_profile_df.write.format('delta').mode('append').saveAsTable(raw_table_name)
     print(f"Athlete profile data written to raw table: {raw_table_name}")
