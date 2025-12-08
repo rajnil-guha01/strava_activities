@@ -1,0 +1,68 @@
+resources:
+  jobs:
+    strava_athlete_profile:
+      name: strava_athlete_profile
+      schedule:
+        quartz_cron_expression: 40 0 10 ? * Sun
+        timezone_id: Asia/Kolkata
+        pause_status: UNPAUSED
+      tasks:
+        - task_key: write_secret_to_file
+          spark_python_task:
+            python_file: ../../src/strava_activities/etl/write_secret_to_file.py
+            parameters:
+              - --secret_path
+              - ${var.secret_path}
+              - --strava_secret_scope
+              - ${var.strava_secret_scope}
+              - --strava_client_secret_name
+              - ${var.strava_client_secret_name}
+          environment_key: strava_athlete_profile_raw_environment
+        - task_key: strava_athlete_profile_raw
+          depends_on:
+            - task_key: write_secret_to_file
+          python_wheel_task:
+            package_name: strava-activities
+            entry_point: strava_athlete_profile_raw
+            parameters:
+              - --config_file_name
+              - ${var.config_file_name}
+              - --secret_path
+              - ${var.secret_path}
+              - --job_run_date
+              - "{{job.start_time.iso_date}}"
+              - --job_run_time
+              - "{{job.start_time.iso_datetime}}"
+          environment_key: strava_athlete_profile_raw_environment
+        - task_key: strava_athlete_profile_cleanse
+          depends_on:
+            - task_key: strava_athlete_profile_raw
+          python_wheel_task:
+            package_name: strava-activities
+            entry_point: strava_athlete_profile_cleanse
+            parameters:
+              - --config_file_name
+              - ${var.config_file_name}
+              - --job_run_date
+              - "{{job.start_time.iso_date}}"
+              - --job_run_time
+              - "{{job.start_time.iso_datetime}}"
+          environment_key: strava_athlete_profile_raw_environment
+        - task_key: remove_secret_file
+          depends_on:
+            - task_key: strava_athlete_profile_cleanse
+          spark_python_task:
+            python_file: ../../src/strava_activities/etl/remove_secret_file.py
+            parameters:
+              - --secret_path
+              - ${var.secret_path}
+          environment_key: strava_athlete_profile_raw_environment
+      queue:
+        enabled: true
+      environments:
+        - environment_key: strava_athlete_profile_raw_environment
+          spec:
+            dependencies:
+              - /Workspace/Users/rajnil94.guha@gmail.com/strava/prod/.bundle/strava_activities/dev/artifacts/.internal/strava_activities-0.0.1-py3-none-any.whl
+            environment_version: "4"
+      performance_target: PERFORMANCE_OPTIMIZED

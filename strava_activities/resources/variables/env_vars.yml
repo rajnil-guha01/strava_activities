@@ -1,0 +1,13 @@
+variables:
+  config_file_name: 
+    description: Configuration file name for the environment.
+    default: prod_config.yaml
+  strava_secret_scope:
+    description: Secret scope name for Strava API secrets.
+    default: strava_dev_scope
+  strava_client_secret_name:
+    description: Secret name for Strava API client secret.
+    default: STRAVA_CLIENT_SECRET
+  secret_path:
+    description: Path to the secret file.
+    default: /Volumes/data_engineering_prod/strava/strava_secrets/secret.txt
