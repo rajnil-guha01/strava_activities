@@ -70,7 +70,7 @@ def main():
         "run_time"
     )
 
-    window_spec = Window.partitionBy('id').orderBy(col('updated_at').desc())
+    window_spec = Window.partitionBy('id').orderBy(col('updated_at').desc(), col('run_time').desc())
     final_df = cleanse_df.withColumn('rn', row_number().over(window_spec)) \
         .filter("rn = 1") \
         .drop('rn')
