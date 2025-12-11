@@ -1,7 +1,7 @@
 resources:
   jobs:
-    strava_athlete_profile:
-      name: strava_athlete_profile
+    strava_athlete_activities:
+      name: strava_athlete_activities
       tasks:
         - task_key: write_secret_to_file
           spark_python_task:
