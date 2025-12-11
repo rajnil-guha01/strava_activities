@@ -14,8 +14,8 @@ databricks:
       raw_table_name: strava_athlete_activities_raw
       raw_checkpoint_path: /Volumes/data_engineering/strava_dev/strava_athlete_activities_raw
     cleanse_table:
-      cleanse_table_name: strava_athlete_profile_cleanse
-      cleanse_checkpoint_path: /Volumes/data_engineering/strava_dev/strava_athlete_cleanse
+      cleanse_table_name: strava_athlete_activities_cleanse
+      cleanse_checkpoint_path: /Volumes/data_engineering/strava_dev/strava_athlete_activities_cleanse
   token_table:
     token_table_name: strava_athelete_tokens
 
