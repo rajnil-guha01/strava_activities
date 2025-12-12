@@ -1,6 +1,6 @@
 [project]
 name = "strava-activities"
-version = "0.0.1"
+version = "0.0.2"
 authors = [{ name = "rajnil94.guha@gmail.com" }]
 requires-python = ">=3.10,<=3.13"
 
@@ -35,3 +35,4 @@ packages = ["src/strava_activities"]
 strava_athlete_profile_raw = "strava_activities.etl.strava_athelete_profile_raw_app:main"
 strava_athlete_profile_cleanse = "strava_activities.etl.strava_athlete_profile_cleanse_app:main"
 strava_athlete_activities_raw = "strava_activities.etl.strava_athlete_activities_raw_app:main"
+strava_athlete_activities_cleanse = "strava_activities.etl.strava_athlete_activities_cleanse_app:main"
