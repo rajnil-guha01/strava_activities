@@ -103,7 +103,7 @@ def main():
         .drop('rn')
     
     # Writing data into cleanse activities table using delta merge
-    cleanse_delta_table = DeltaTable.forName(spark = spark, tableOrViewName = cleanse_table)
+    cleanse_delta_table = DeltaTable.forName(sparkSession = spark, tableOrViewName = cleanse_table)
     cleanse_delta_table.alias('target') \
         .merge(cleanse_df.alias('source'), "target.id = source.id") \
         .whenMatchedUpdateAll() \
