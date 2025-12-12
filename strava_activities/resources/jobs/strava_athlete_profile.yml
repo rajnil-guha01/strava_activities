@@ -59,6 +59,6 @@ resources:
         - environment_key: strava_athlete_profile_raw_environment
           spec:
             dependencies:
-              - /Workspace/Users/rajnil94.guha@gmail.com/dev/.bundle/strava_activities/dev/artifacts/.internal/strava_activities-0.0.1-py3-none-any.whl
+              - /Workspace/Users/rajnil94.guha@gmail.com/dev/.bundle/strava_activities/dev/artifacts/.internal/*.whl
             environment_version: "4"
       performance_target: PERFORMANCE_OPTIMIZED
