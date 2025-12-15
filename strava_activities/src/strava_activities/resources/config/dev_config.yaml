@@ -18,6 +18,8 @@ databricks:
       cleanse_checkpoint_path: /Volumes/data_engineering/strava_dev/strava_athlete_activities_cleanse
   token_table:
     token_table_name: strava_athelete_tokens
+  calendar_dimension:
+    table_name: cal_dim
 
 strava_api:
   client_id: 186544
