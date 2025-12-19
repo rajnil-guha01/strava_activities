@@ -53,6 +53,11 @@ resources:
               - --secret_path
               - ${var.secret_path}
           environment_key: strava_athlete_profile_raw_environment
+        - task_key: run_strava_athlete_activities_job
+          depends_on:
+            - task_key: remove_secret_file
+          run_job_task:
+            job_id: 1052313416810602
       queue:
         enabled: true
       environments:
