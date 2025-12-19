@@ -1,0 +1,802 @@
+{
+  "datasets": [
+    {
+      "name": "722af67b",
+      "displayName": "strava_athlete_activities_cleanse",
+      "queryLines": [
+        "SELECT * FROM IDENTIFIER(:dataset_catalog || '.' || :dataset_schema || '.strava_athlete_activities_cleanse')"
+      ]
+    },
+    {
+      "name": "424e66ac",
+      "displayName": "strava_athlete_profile_cleanse",
+      "queryLines": [
+        "SELECT * FROM IDENTIFIER(:dataset_catalog || '.' || :dataset_schema || '.strava_athlete_profile_cleanse')"
+      ]
+    },
+    {
+      "name": "b40dfeb5",
+      "displayName": "cal_dim",
+      "queryLines": [
+        "SELECT * FROM IDENTIFIER(:dataset_catalog || '.' || :dataset_schema || '.cal_dim')"
+      ]
+    },
+    {
+      "name": "2ef7d81b",
+      "displayName": "activity_streak",
+      "queryLines": [
+        "with activity_start as (\n",
+        "  select\n",
+        "    date(min(start_date_local)) as first_strava_activity,\n",
+        "    year(min(start_date_local)) as first_strava_activity_year,\n",
+        "    weekofyear(min(start_date_local)) as first_strava_activity_week,\n",
+        "    date(max(start_date_local)) as latest_strava_activity,\n",
+        "    year(max(start_date_local)) as latest_strava_activity_year,\n",
+        "    weekofyear(max(start_date_local)) as latest_strava_activity_week\n",
+        "  from IDENTIFIER(:dataset_catalog || '.' || :dataset_schema || '.strava_athlete_activities_cleanse')\n",
+        "),\n",
+        "missed_days as (\n",
+        "  select\n",
+        "    cd.*\n",
+        "  from IDENTIFIER(:dataset_catalog || '.' || :dataset_schema || '.cal_dim') cd\n",
+        "  left join IDENTIFIER(:dataset_catalog || '.' || :dataset_schema || '.strava_athlete_activities_cleanse') cl on cd.cal_date = date(cl.start_date_local)\n",
+        "  where cl.start_date_local is null and cd.cal_date >= (select first_strava_activity from activity_start) and cd.cal_date <= (select latest_strava_activity from activity_start)\n",
+        "),\n",
+        "missed_weeks as (\n",
+        "  select\n",
+        "    cal_year,\n",
+        "    cal_week_of_year,\n",
+        "    count(1) no_of_missed_days\n",
+        "  from missed_days\n",
+        "  group by cal_year, cal_week_of_year\n",
+        "  having no_of_missed_days = 7\n",
+        "),\n",
+        "all_missed_weeks as (\n",
+        "  select\n",
+        "    mw.cal_year,\n",
+        "    mw.cal_week_of_year,\n",
+        "    min(cd.cal_date) as week_start_date,\n",
+        "    max(cd.cal_date) as week_end_date\n",
+        "  from missed_weeks mw \n",
+        "  inner join IDENTIFIER(:dataset_catalog || '.' || :dataset_schema || '.cal_dim') cd on mw.cal_year = cd.cal_year and mw.cal_week_of_year = cd.cal_week_of_year\n",
+        "  group by mw.cal_year, mw.cal_week_of_year\n",
+        "  union all\n",
+        "  select\n",
+        "    first_strava_activity_year,\n",
+        "    first_strava_activity_week,\n",
+        "    null as week_start_date,\n",
+        "    first_strava_activity as week_end_date\n",
+        "  from activity_start\n",
+        "  union all\n",
+        "  select\n",
+        "    latest_strava_activity_year,\n",
+        "    latest_strava_activity_week,\n",
+        "    latest_strava_activity as week_start_date,\n",
+        "    null as week_end_date\n",
+        "  from activity_start\n",
+        "),\n",
+        "get_streak_duration as (\n",
+        "  select\n",
+        "    *,\n",
+        "    lead(week_start_date) over(order by cal_year, cal_week_of_year) as streak_end_date\n",
+        "  from all_missed_weeks\n",
+        "  order by cal_year, cal_week_of_year\n",
+        ")\n",
+        "select\n",
+        "  week_end_date as streak_start_date,\n",
+        "  streak_end_date,\n",
+        "  count(1) as no_of_activities,\n",
+        "  round(sum(cl.distance), 2) as total_distance_ran\n",
+        "from get_streak_duration gs\n",
+        "inner join IDENTIFIER(:dataset_catalog || '.' || :dataset_schema || '.strava_athlete_activities_cleanse') cl on date(cl.start_date_local) between gs.week_end_date and gs.streak_end_date\n",
+        "where gs.streak_end_date is not null\n",
+        "group by week_end_date, streak_end_date\n",
+        "order by no_of_activities desc\n",
+        "limit 5;"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "43ab2e4d",
+      "displayName": "strava_activities_summary",
+      "layout": [
+        {
+          "widget": {
+            "name": "91f3454d",
+            "multilineTextboxSpec": {
+              "lines": [
+                "# Strava Activities Summary"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 4,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "6b7e7d18",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "722af67b",
+                  "fields": [
+                    {
+                      "name": "count(id)",
+                      "expression": "COUNT(`id`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "count(id)"
+                }
+              },
+              "frame": {
+                "title": "Total number of activities",
+                "showTitle": true
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "367a23b9",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "722af67b",
+                  "fields": [
+                    {
+                      "name": "sum(distance)",
+                      "expression": "SUM(`distance`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "sum(distance)"
+                }
+              },
+              "frame": {
+                "title": "Total Distance Covered(km)",
+                "showTitle": true
+              }
+            }
+          },
+          "position": {
+            "x": 2,
+            "y": 2,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "44e5e4c1",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "722af67b",
+                  "fields": [
+                    {
+                      "name": "max(average_speed)",
+                      "expression": "MAX(`average_speed`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "max(average_speed)"
+                }
+              },
+              "frame": {
+                "title": "Max average speed across activities(m/sec)",
+                "showTitle": true
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 3,
+            "width": 2,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "4a21a36e",
+            "queries": [
+              {
+                "name": "dashboards/01f0dc14c47418c59621a0cfcb566f3e/datasets/01f0dc14e1bc1a43909b0b600aa5c3d0_type",
+                "query": {
+                  "datasetName": "722af67b",
+                  "fields": [
+                    {
+                      "name": "type",
+                      "expression": "`type`"
+                    },
+                    {
+                      "name": "type_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-single-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "type",
+                    "queryName": "dashboards/01f0dc14c47418c59621a0cfcb566f3e/datasets/01f0dc14e1bc1a43909b0b600aa5c3d0_type"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Activity Type"
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 0,
+            "width": 2,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "02bfc540",
+            "queries": [
+              {
+                "name": "dashboards/01f0dc14c47418c59621a0cfcb566f3e/datasets/01f0dc14e1bc1a43909b0b600aa5c3d0_start_date_local",
+                "query": {
+                  "datasetName": "722af67b",
+                  "fields": [
+                    {
+                      "name": "start_date_local",
+                      "expression": "`start_date_local`"
+                    },
+                    {
+                      "name": "start_date_local_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-date-range-picker",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "start_date_local",
+                    "queryName": "dashboards/01f0dc14c47418c59621a0cfcb566f3e/datasets/01f0dc14e1bc1a43909b0b600aa5c3d0_start_date_local"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Activity Date"
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 1,
+            "width": 2,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "04431881",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "722af67b",
+                  "fields": [
+                    {
+                      "name": "monthly(start_date)",
+                      "expression": "DATE_TRUNC(\"MONTH\", `start_date`)"
+                    },
+                    {
+                      "name": "sum(distance)",
+                      "expression": "SUM(`distance`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "monthly(start_date)",
+                  "axis": {
+                    "title": "Time"
+                  },
+                  "scale": {
+                    "type": "temporal"
+                  }
+                },
+                "y": {
+                  "fieldName": "sum(distance)",
+                  "axis": {
+                    "title": "Total Distance"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "frame": {
+                "title": "Distance covered over time",
+                "showTitle": true
+              },
+              "mark": {
+                "colors": [
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 4
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 2
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 3
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 4
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 5
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 6
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 7
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 8
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 9
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 5,
+            "width": 3,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "08036e34",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "722af67b",
+                  "fields": [
+                    {
+                      "name": "monthly(start_date)",
+                      "expression": "DATE_TRUNC(\"MONTH\", `start_date`)"
+                    },
+                    {
+                      "name": "avg(average_speed)",
+                      "expression": "AVG(`average_speed`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "monthly(start_date)",
+                  "scale": {
+                    "type": "temporal"
+                  }
+                },
+                "y": {
+                  "fieldName": "avg(average_speed)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "frame": {
+                "title": "Average Speed Over Time",
+                "showTitle": true
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 5,
+            "width": 3,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "83d522af",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "722af67b",
+                  "fields": [
+                    {
+                      "name": "average_speed",
+                      "expression": "`average_speed`"
+                    },
+                    {
+                      "name": "average_cadence",
+                      "expression": "`average_cadence`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "scatter",
+              "encodings": {
+                "x": {
+                  "fieldName": "average_speed",
+                  "axis": {
+                    "title": "Average Speed"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "average_cadence",
+                  "axis": {
+                    "title": "Average Cadence"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "frame": {
+                "title": "Average Speed and Average Cadence Correlation",
+                "showTitle": true
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 11,
+            "width": 2,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "017c5f4a",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "722af67b",
+                  "fields": [
+                    {
+                      "name": "total_elevation_gain",
+                      "expression": "`total_elevation_gain`"
+                    },
+                    {
+                      "name": "average_cadence",
+                      "expression": "`average_cadence`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "scatter",
+              "encodings": {
+                "x": {
+                  "fieldName": "total_elevation_gain",
+                  "axis": {
+                    "title": "Total Elevation Gain"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "average_cadence",
+                  "axis": {
+                    "title": "Average Cadence"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "frame": {
+                "title": "Average cadence and Total elevation gain Correlation",
+                "showTitle": true
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 16,
+            "width": 2,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "3b73c7cd",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "2ef7d81b",
+                  "fields": [
+                    {
+                      "name": "streak_start_date",
+                      "expression": "`streak_start_date`"
+                    },
+                    {
+                      "name": "streak_end_date",
+                      "expression": "`streak_end_date`"
+                    },
+                    {
+                      "name": "no_of_activities",
+                      "expression": "`no_of_activities`"
+                    },
+                    {
+                      "name": "total_distance_ran",
+                      "expression": "`total_distance_ran`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "streak_start_date",
+                    "dateTimeFormat": "YYYY-MM-DD",
+                    "booleanValues": [
+                      "false",
+                      "true"
+                    ],
+                    "imageUrlTemplate": "{{ @ }}",
+                    "imageTitleTemplate": "{{ @ }}",
+                    "imageWidth": "",
+                    "imageHeight": "",
+                    "linkUrlTemplate": "{{ @ }}",
+                    "linkTextTemplate": "{{ @ }}",
+                    "linkTitleTemplate": "{{ @ }}",
+                    "linkOpenInNewTab": true,
+                    "type": "date",
+                    "displayAs": "datetime",
+                    "visible": true,
+                    "order": 100000,
+                    "title": "streak_start_date",
+                    "allowSearch": false,
+                    "alignContent": "right",
+                    "allowHTML": false,
+                    "highlightLinks": false,
+                    "useMonospaceFont": false,
+                    "preserveWhitespace": false
+                  },
+                  {
+                    "fieldName": "streak_end_date",
+                    "dateTimeFormat": "YYYY-MM-DD",
+                    "booleanValues": [
+                      "false",
+                      "true"
+                    ],
+                    "imageUrlTemplate": "{{ @ }}",
+                    "imageTitleTemplate": "{{ @ }}",
+                    "imageWidth": "",
+                    "imageHeight": "",
+                    "linkUrlTemplate": "{{ @ }}",
+                    "linkTextTemplate": "{{ @ }}",
+                    "linkTitleTemplate": "{{ @ }}",
+                    "linkOpenInNewTab": true,
+                    "type": "date",
+                    "displayAs": "datetime",
+                    "visible": true,
+                    "order": 100001,
+                    "title": "streak_end_date",
+                    "allowSearch": false,
+                    "alignContent": "right",
+                    "allowHTML": false,
+                    "highlightLinks": false,
+                    "useMonospaceFont": false,
+                    "preserveWhitespace": false
+                  },
+                  {
+                    "fieldName": "no_of_activities",
+                    "numberFormat": "0",
+                    "booleanValues": [
+                      "false",
+                      "true"
+                    ],
+                    "imageUrlTemplate": "{{ @ }}",
+                    "imageTitleTemplate": "{{ @ }}",
+                    "imageWidth": "",
+                    "imageHeight": "",
+                    "linkUrlTemplate": "{{ @ }}",
+                    "linkTextTemplate": "{{ @ }}",
+                    "linkTitleTemplate": "{{ @ }}",
+                    "linkOpenInNewTab": true,
+                    "type": "integer",
+                    "displayAs": "number",
+                    "visible": true,
+                    "order": 100002,
+                    "title": "no_of_activities",
+                    "allowSearch": false,
+                    "alignContent": "right",
+                    "allowHTML": false,
+                    "highlightLinks": false,
+                    "useMonospaceFont": false,
+                    "preserveWhitespace": false
+                  },
+                  {
+                    "fieldName": "total_distance_ran",
+                    "numberFormat": "0.00",
+                    "booleanValues": [
+                      "false",
+                      "true"
+                    ],
+                    "imageUrlTemplate": "{{ @ }}",
+                    "imageTitleTemplate": "{{ @ }}",
+                    "imageWidth": "",
+                    "imageHeight": "",
+                    "linkUrlTemplate": "{{ @ }}",
+                    "linkTextTemplate": "{{ @ }}",
+                    "linkTitleTemplate": "{{ @ }}",
+                    "linkOpenInNewTab": true,
+                    "type": "float",
+                    "displayAs": "number",
+                    "visible": true,
+                    "order": 100003,
+                    "title": "total_distance_ran",
+                    "allowSearch": false,
+                    "alignContent": "right",
+                    "allowHTML": false,
+                    "highlightLinks": false,
+                    "useMonospaceFont": false,
+                    "preserveWhitespace": false
+                  }
+                ]
+              },
+              "invisibleColumns": [],
+              "allowHTMLByDefault": false,
+              "itemsPerPage": 25,
+              "paginationSize": "default",
+              "condensed": true,
+              "withRowNumber": false,
+              "frame": {
+                "showTitle": true,
+                "title": "Top 5 Activity Streaks",
+                "showDescription": false
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 11,
+            "width": 4,
+            "height": 5
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS"
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "canvasBackgroundColor": {
+        "light": "#FAFAFB",
+        "dark": "#1F272D"
+      },
+      "widgetBackgroundColor": {
+        "light": "#FFFFFF",
+        "dark": "#11171C"
+      },
+      "fontColor": {
+        "light": "#11171C",
+        "dark": "#E8ECF0"
+      },
+      "selectionColor": {
+        "light": "#2272B4",
+        "dark": "#8ACAFF"
+      },
+      "visualizationColors": [
+        "#FFAB00",
+        "#00A972",
+        "#FF3621",
+        "#8BCAE7",
+        "#AB4057",
+        "#99DDB4",
+        "#FCA4A1",
+        "#919191",
+        "#BF7080"
+      ],
+      "widgetHeaderAlignment": "LEFT"
+    },
+    "genieSpace": {
+      "isEnabled": true,
+      "overrideId": "01f0d77b1f931c8bbaa0c8b3bf5387dd",
+      "enablementMode": "ENABLED"
+    },
+    "applyModeEnabled": false
+  }
+}
