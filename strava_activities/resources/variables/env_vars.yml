@@ -14,3 +14,9 @@ variables:
   load_type:
     description: Type of load to perform - Full (F) or Incremental (I).
     default: F
+  dashboard_catalog_name:
+    description: Catalog name for dashboards.
+    default: data_engineering
+  dashboard_schema_name:
+    description: Schema name for dashboards
+    default: strava_dev
