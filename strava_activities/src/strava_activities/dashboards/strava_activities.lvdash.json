@@ -4,21 +4,21 @@
       "name": "722af67b",
       "displayName": "strava_athlete_activities_cleanse",
       "queryLines": [
-        "SELECT * FROM data_engineering.strava_dev.strava_athlete_activities_cleanse"
+        "SELECT * FROM data_engineering_prod.strava.strava_athlete_activities_cleanse"
       ]
     },
     {
       "name": "424e66ac",
       "displayName": "strava_athlete_profile_cleanse",
       "queryLines": [
-        "SELECT * FROM data_engineering.strava_dev.strava_athlete_profile_cleanse"
+        "SELECT * FROM data_engineering_prod.strava.strava_athlete_profile_cleanse"
       ]
     },
     {
       "name": "b40dfeb5",
       "displayName": "cal_dim",
       "queryLines": [
-        "SELECT * FROM data_engineering.strava_dev.cal_dim"
+        "SELECT * FROM data_engineering_prod.strava.cal_dim"
       ]
     },
     {
@@ -33,13 +33,13 @@
         "    date(max(start_date_local)) as latest_strava_activity,\n",
         "    year(max(start_date_local)) as latest_strava_activity_year,\n",
         "    weekofyear(max(start_date_local)) as latest_strava_activity_week\n",
-        "  from data_engineering.strava_dev.strava_athlete_activities_cleanse\n",
+        "  from data_engineering_prod.strava.strava_athlete_activities_cleanse\n",
         "),\n",
         "missed_days as (\n",
         "  select\n",
         "    cd.*\n",
-        "  from data_engineering.strava_dev.cal_dim cd\n",
-        "  left join data_engineering.strava_dev.strava_athlete_activities_cleanse cl on cd.cal_date = date(cl.start_date_local)\n",
+        "  from data_engineering_prod.strava.cal_dim cd\n",
+        "  left join data_engineering_prod.strava.strava_athlete_activities_cleanse cl on cd.cal_date = date(cl.start_date_local)\n",
         "  where cl.start_date_local is null and cd.cal_date >= (select first_strava_activity from activity_start) and cd.cal_date <= (select latest_strava_activity from activity_start)\n",
         "),\n",
         "missed_weeks as (\n",
@@ -58,7 +58,7 @@
         "    min(cd.cal_date) as week_start_date,\n",
         "    max(cd.cal_date) as week_end_date\n",
         "  from missed_weeks mw \n",
-        "  inner join data_engineering.strava_dev.cal_dim cd on mw.cal_year = cd.cal_year and mw.cal_week_of_year = cd.cal_week_of_year\n",
+        "  inner join data_engineering_prod.strava.cal_dim cd on mw.cal_year = cd.cal_year and mw.cal_week_of_year = cd.cal_week_of_year\n",
         "  group by mw.cal_year, mw.cal_week_of_year\n",
         "  union all\n",
         "  select\n",
@@ -88,7 +88,7 @@
         "  count(1) as no_of_activities,\n",
         "  round(sum(cl.distance), 2) as total_distance_ran\n",
         "from get_streak_duration gs\n",
-        "inner join data_engineering.strava_dev.strava_athlete_activities_cleanse cl on date(cl.start_date_local) between gs.week_end_date and gs.streak_end_date\n",
+        "inner join data_engineering_prod.strava.strava_athlete_activities_cleanse cl on date(cl.start_date_local) between gs.week_end_date and gs.streak_end_date\n",
         "where gs.streak_end_date is not null\n",
         "group by week_end_date, streak_end_date\n",
         "order by no_of_activities desc\n",

@@ -2,6 +2,10 @@ resources:
   jobs:
     strava_athlete_profile:
       name: strava_athlete_profile
+      schedule:
+        quartz_cron_expression: 40 0 10 ? * Sun
+        timezone_id: Asia/Kolkata
+        pause_status: UNPAUSED
       tasks:
         - task_key: write_secret_to_file
           spark_python_task:
@@ -64,6 +68,6 @@ resources:
         - environment_key: strava_athlete_profile_raw_environment
           spec:
             dependencies:
-              - /Workspace/Users/rajnil94.guha@gmail.com/dev/.bundle/strava_activities/dev/artifacts/.internal/strava_activities-0.0.2-py3-none-any.whl
+              - /Workspace/Users/rajnil94.guha@gmail.com/strava/prod/.bundle/strava_activities/prod/artifacts/.internal/strava_activities-0.0.2-py3-none-any.whl
             environment_version: "4"
       performance_target: PERFORMANCE_OPTIMIZED

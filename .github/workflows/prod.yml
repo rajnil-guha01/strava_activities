@@ -7,7 +7,7 @@ name: 'This workflow deploys the strava data engineering project to the Databric
 on:
   push:
     branches:
-      - development
+      - main
 jobs:     
     validate:
       runs-on: ubuntu-latest
@@ -22,7 +22,7 @@ jobs:
           env:
             DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_FREE_EDITION_TOKEN }}
             DATABRICKS_HOST: ${{ secrets.DATABRICKS_FREE_EDITION_HOST }}
-          run: databricks bundle validate --target dev
+          run: databricks bundle validate --target prod
           working-directory: './strava_activities'
           
     deploy:
@@ -45,7 +45,7 @@ jobs:
           env:
             DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_FREE_EDITION_TOKEN }}
             DATABRICKS_HOST: ${{ secrets.DATABRICKS_FREE_EDITION_HOST }}
-          run: databricks bundle deploy --target dev
+          run: databricks bundle deploy --target prod
           working-directory: './strava_activities'
 
 
