@@ -55,6 +55,17 @@ resources:
               - --secret_path
               - ${var.secret_path}
           environment_key: strava_athlete_profile_raw_environment
+        - task_key: refresh_strava_summary_dashboard
+          depends_on:
+            - task_key: remove_secret_file
+          dashboard_task:
+            subscription:
+              subscribers:
+                - user_name: rajnil94.guha@gmail.com
+              paused: false
+              custom_subject: Strava Activities Summary
+            warehouse_id: 8201a4a7565f912b
+            dashboard_id: 01f0ddcffa1711409d721fd0e17f52b2
       queue:
         enabled: true
       environments:
