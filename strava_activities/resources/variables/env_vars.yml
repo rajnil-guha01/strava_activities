@@ -1,7 +1,7 @@
 variables:
   config_file_name: 
     description: Configuration file name for the environment.
-    default: prod_config.yaml
+    default: prod_config.yml
   strava_secret_scope:
     description: Secret scope name for Strava API secrets.
     default: strava_dev_scope
