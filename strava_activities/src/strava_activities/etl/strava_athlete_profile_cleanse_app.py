@@ -39,9 +39,9 @@ def main():
     
     catalog = config['databricks']['catalog_name']
     schema = config['databricks']['schema_name']
-    raw_table_name = config['databricks']['raw_table']['raw_table_name']
+    raw_table_name = config['databricks']['athlete_profile']['raw_table']['raw_table_name']
     raw_table = f"{catalog}.{schema}.{raw_table_name}"
-    cleanse_table_name = config['databricks']['cleanse_table']['cleanse_table_name']
+    cleanse_table_name = config['databricks']['athlete_profile']['cleanse_table']['cleanse_table_name']
     cleanse_table = f"{catalog}.{schema}.{cleanse_table_name}"
 
     # Read data from raw table for this run date and apply transformations

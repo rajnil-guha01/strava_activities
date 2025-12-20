@@ -1,0 +1,6 @@
+resources:
+  dashboards:
+    strava_activities:
+      display_name: "Strava Activities Summary"
+      file_path: ../../src/strava_activities/dashboards/strava_activities.lvdash.json
+      warehouse_id: 8201a4a7565f912b

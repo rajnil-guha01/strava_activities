@@ -1,4 +1,5 @@
 from pyspark.sql import SparkSession
+from pyspark.sql.functions import *
 import requests
 import time
 from datetime import datetime, timedelta
@@ -88,3 +89,115 @@ def get_athlete_profile_details(spark: SparkSession, client_id: str, scope: str,
     )
     print("Athlete profile details fetched successfully.")
     return response
+
+def get_strava_activities(spark: SparkSession, client_id: str, scope: str, catalog: str, schema: str, token_table: str, before_date_unix: int, after_date_unix: int, secure_path: str, load_type: str) -> dict:
+    """
+    Get Strava activities from Strava API for the past week from the given run_time.
+    Parameters:
+    - client_id (int): Strava client ID (athlete ID).
+    - scope (str): Scope of the token.
+    - catalog (str): Database catalog name.
+    - schema (str): Database schema name.
+    - token_table (str): Table name where tokens are stored.
+    - run_time (str): Job run time. Format: YYYY-MM-DDTHH:MM:SS
+    - secure_path (str): Path to secure file containing client secret.
+    Returns:
+    - dict: Strava activities from Strava API.
+    """
+    # before_date_unix = int(datetime.strptime(run_time, "%Y-%m-%dT%H:%M:%S").timestamp())
+    # after_date = datetime.strptime(run_time, "%Y-%m-%dT%H:%M:%S") - timedelta(days=7)
+    # after_date_unix = int(after_date.timestamp())
+
+    # Fetch valid access token
+    strava_access_token = check_token_expiry(spark = spark, client_id = client_id, scope = scope, catalog = catalog, 
+                                             schema = schema, token_table = token_table, secure_path = secure_path)
+    print("Getting Strava activities from Strava API...")
+    if load_type == 'I':
+        response = requests.get(
+            "https://www.strava.com/api/v3/athlete/activities",
+            headers = {"Authorization": f"Bearer {strava_access_token}"},
+            params = {
+                "before": before_date_unix,
+                "after": after_date_unix
+            }
+        )
+    else:
+        response = requests.get(
+            "https://www.strava.com/api/v3/athlete/activities",
+            headers = {"Authorization": f"Bearer {strava_access_token}"},
+            params = {
+                "before": before_date_unix,
+                "after": after_date_unix,
+                "per_page": 100
+            }
+        )
+    print(f"Strava activities fetched successfully for activities between {after_date_unix} and {before_date_unix}")
+    return response
+
+def get_all_strava_activities(spark: SparkSession, client_id: str, scope: str, catalog: str, schema: str, token_table: str, secure_path: str) -> list:
+    """
+    Get all Strava activities from Strava API.
+    Parameters:
+    - client_id (int): Strava client ID (athlete ID).
+    - scope (str): Scope of the token.
+    - catalog (str): Database catalog name.
+    - schema (str): Database schema name.
+    - token_table (str): Table name where tokens are stored.
+    - secure_path (str): Path to secure file containing client secret.
+    Returns:
+    - list: All Strava activities from Strava API.
+    """
+    after_date = datetime.strptime("2024-01-01T00:00:00", "%Y-%m-%dT%H:%M:%S")
+    after_date_unix = int(after_date.timestamp())
+    before_date = after_date + timedelta(days=100)
+    before_date_unix = int(before_date.timestamp())
+    all_activities_list = []
+
+    # Fetch valid access token
+    strava_access_token = check_token_expiry(spark = spark, client_id = client_id, scope = scope, catalog = catalog, 
+                                             schema = schema, token_table = token_table, secure_path = secure_path)
+    print("Getting all Strava activities from Strava API...")
+
+    while True:
+        response = requests.get(
+            "https://www.strava.com/api/v3/athlete/activities",
+            headers = {"Authorization": f"Bearer {strava_access_token}"},
+            params = {
+                "before": before_date_unix,
+                "after": after_date_unix,
+                "per_page": 100
+            }
+        )
+        activities = response.json()
+        all_activities_list.append(activities)
+        after_date_unix = before_date_unix
+        if after_date_unix >= time.time():
+            break
+        before_date = before_date + timedelta(days=100)
+        before_date_unix = int(before_date.timestamp())
+    print("All Strava activities fetched successfully.")
+    return all_activities_list
+
+
+def convert_api_response_to_df(spark, response):
+    """
+    Convert Strava API response to Spark DataFrame.
+    Parameters:
+    - spark (SparkSession): Spark session object.
+    - response (dict): Strava API response.
+    Returns:
+    - DataFrame: Spark DataFrame containing Strava activities.
+    """
+    payload = response.text
+    json_df = spark.createDataFrame([(payload,)], ["json_str"])
+
+    # Infer a Spark schema from the JSON string and parse it
+    parsed_df = json_df.select(
+        from_json(col("json_str"), schema_of_json(lit(payload))).alias("data")
+    )
+    flattened_df = parsed_df.select(explode('data').alias('athlete_activities'))
+
+    flattened_variant_df = flattened_df.select(from_json(to_json('athlete_activities'), 'variant').alias('athlete_activities'))
+    return flattened_variant_df
+
+        
