@@ -1,9 +1,9 @@
 resources:
   jobs:
     calendar_dimesnion:
-      name: calendar_dimesnion
+      name: calendar_dimension
       tasks:
-        - task_key: load_calendar_dimesnion
+        - task_key: load_calendar_dimension
           python_wheel_task:
             package_name: strava-activities
             entry_point: calendar_dimension
