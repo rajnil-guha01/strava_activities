@@ -13,7 +13,7 @@ variables:
     default: /Volumes/data_engineering_prod/strava/strava_secrets/secret.txt
   load_type:
     description: Type of load to perform - Full (F) or Incremental (I).
-    default: F
+    default: I
   dashboard_catalog_name:
     description: Catalog name for dashboards.
     default: data_engineering_prod
