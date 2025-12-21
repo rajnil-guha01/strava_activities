@@ -86,7 +86,7 @@
         "  week_end_date as streak_start_date,\n",
         "  streak_end_date,\n",
         "  count(1) as no_of_activities,\n",
-        "  round(sum(cl.distance), 2) as total_distance_ran\n",
+        "  round(sum(cl.distance), 2) as total_distance_covered\n",
         "from get_streak_duration gs\n",
         "inner join data_engineering_prod.strava.strava_athlete_activities_cleanse cl on date(cl.start_date_local) between gs.week_end_date and gs.streak_end_date\n",
         "where gs.streak_end_date is not null\n",
