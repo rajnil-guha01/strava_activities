@@ -22,13 +22,13 @@ This README explains the repository's purpose, the main components, an architect
 
 ### About Strava and authentication to Strava REST API
 
-Strava is an online apllication which is used for tracking physical activity for users and incorporating them as social media features. It uses GPS information to track activity locations and supports multiple physical activities such as running, walking, cycling, swimming, etc. Strava records data for user's activities which can then be shared with user's followers or publicly on socila media websites. An activity's recorded information may include a route summary, elevation (net and unidirectional), speed (average and maximum), timing (total and moving time), power and heart rate. Activities can be recorded using the mobile app or from devices manufactured by third parties like Garmin, Google Fit, Suunto, and Wahoo. Activities can also be entered manually via the Strava website and mobile app. To know more about strava please visit strava's website or download the app.
+Strava is an online apllication which is used for tracking physical activity for users and incorporating them as social media features. It uses GPS information to track activity locations and supports multiple physical activities such as running, walking, cycling, swimming, etc. Strava records data for user's activities which can then be shared with user's followers or publicly on social media websites. An activity's recorded information may include a route summary, elevation (net and unidirectional), speed (average and maximum), timing (total and moving time), power and heart rate. Activities can be recorded using the mobile app or from devices manufactured by third parties like Garmin, Google Fit, Suunto, and Wahoo. Activities can also be entered manually via the Strava website and mobile app. To know more about strava please visit strava's website or download the app.
 
 Strava exposes all the activity data which it collects using a REST API. The Strava REST API includes data on athletes, segments, routes, clubs, and gear. It is free to use. To get data on athletes, you will have to make an application and request that athletes sign in with Strava, and grant your application certain permissions using OAuth 2.0. You can get data on yourself without authentication for testing purposes. Strava REST API usage is limited on a per-application basis using both a 15-minute and daily request limit. The default rate limit allows 200 requests every 15 minutes, with up to 2,000 requests per day. 
 To know more about the Strava REST API and how to set-up authentication to fetch data please visit the link [link](https://developers.strava.com/docs/getting-started/#oauth)
 
-Other useful Strava REST API resources:
-[Strava Authentication](https://developers.strava.com/docs/authentication/)
+Other useful Strava REST API resources:<br>
+[Strava Authentication](https://developers.strava.com/docs/authentication/)<br>
 [Strava REST API Reference](https://developers.strava.com/docs/reference/)
 
 ### Project Information
