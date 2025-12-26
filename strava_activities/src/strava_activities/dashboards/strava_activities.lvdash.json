@@ -614,8 +614,8 @@
                       "expression": "`no_of_activities`"
                     },
                     {
-                      "name": "total_distance_ran",
-                      "expression": "`total_distance_ran`"
+                      "name": "total_distance_covered",
+                      "expression": "`total_distance_covered`"
                     }
                   ],
                   "disaggregated": true
@@ -709,7 +709,7 @@
                     "preserveWhitespace": false
                   },
                   {
-                    "fieldName": "total_distance_ran",
+                    "fieldName": "total_distance_covered",
                     "numberFormat": "0.00",
                     "booleanValues": [
                       "false",
@@ -727,7 +727,7 @@
                     "displayAs": "number",
                     "visible": true,
                     "order": 100003,
-                    "title": "total_distance_ran",
+                    "title": "total_distance_covered",
                     "allowSearch": false,
                     "alignContent": "right",
                     "allowHTML": false,
