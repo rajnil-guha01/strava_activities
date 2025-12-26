@@ -65,7 +65,7 @@ resources:
               paused: false
               custom_subject: Strava Activities Summary
             warehouse_id: 8201a4a7565f912b
-            dashboard_id: 01f0ddcffa1711409d721fd0e17f52b2
+            dashboard_id: 01f0e257f08c1f1d8b829e12ff4e4d5b
       queue:
         enabled: true
       environments:
