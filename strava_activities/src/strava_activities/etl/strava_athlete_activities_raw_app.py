@@ -53,8 +53,8 @@ def main():
     try:
         if load_type == 'I':
             print('Performing incremental load...')
-            before_date_unix = int(datetime.strptime(run_time, "%Y-%m-%dT%H:%M:%S").timestamp())
-            after_date = datetime.strptime(run_time, "%Y-%m-%dT%H:%M:%S") - timedelta(days=7)
+            before_date_unix = int(datetime.strptime(run_time, "%Y-%m-%dT%H:%M:%S.%f").timestamp())
+            after_date = datetime.strptime(run_time, "%Y-%m-%dT%H:%M:%S.%f") - timedelta(days=7)
             after_date_unix = int(after_date.timestamp())
             athlete_activities_data = get_strava_activities(
                 spark = spark,
