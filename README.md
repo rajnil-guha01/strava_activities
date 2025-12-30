@@ -77,11 +77,11 @@ Below are conceptual architecture diagrams showing how the pipeline components i
 
 ### Strava Athlete Profile Pipeline:
 
-![strava_athlete_profile](https://github.com/user-attachments/assets/fa0ba9f9-46db-4609-8646-1805ce814930)
+<img width="1536" height="1024" alt="strava_profile_pipeline" src="https://github.com/user-attachments/assets/aa9b26ae-59c8-4421-83c4-f7549a35b7dd" />
 
 ### Strava Athlete Activity Pipeline:
 
-![strava_activities](https://github.com/user-attachments/assets/7c8def84-56ce-4531-9c91-7be807a90946)
+<img width="1536" height="1024" alt="strava_activities_pipeline" src="https://github.com/user-attachments/assets/169f7d26-a452-4ef5-8995-3d93169efa8a" />
 
 - For Athlete Activity there are 2 types of data load:
   - Full Load - For one-time load of all strava activities since the start of `2024-01-01 00:00:00`. As there is a rate limit on Strava REST API as mentioned above, we try to get all activities from the REST API in batches of 100 days since the start and then all the way till the current day.
