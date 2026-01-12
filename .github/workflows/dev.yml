@@ -45,7 +45,7 @@ jobs:
           env:
             DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_FREE_EDITION_TOKEN }}
             DATABRICKS_HOST: ${{ secrets.DATABRICKS_FREE_EDITION_HOST }}
-          run: databricks bundle deploy --target dev
+          run: databricks bundle deploy --force --target dev
           working-directory: './strava_activities'
 
 
