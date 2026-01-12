@@ -4,3 +4,6 @@ resources:
       display_name: "Strava Activities Summary"
       file_path: ../../src/strava_activities/dashboards/strava_activities.lvdash.json
       warehouse_id: 8201a4a7565f912b
+      embed_credentials: true
+      dataset_catalog: ${var.dashboard_catalog_name}
+      dataset_schema: ${var.dashboard_schema_name}
