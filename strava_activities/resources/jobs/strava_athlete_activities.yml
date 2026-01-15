@@ -26,9 +26,9 @@ resources:
               - --secret_path
               - ${var.secret_path}
               - --job_run_date
-              - "{{job.start_time.iso_date}}"
+              - "{{job.trigger.time.iso_date}}"
               - --job_run_time
-              - "{{job.start_time.iso_datetime}}"
+              - "{{job.trigger.time.iso_datetime}}"
               - --load_type
               - ${var.load_type}
           environment_key: strava_athlete_profile_raw_environment
@@ -42,9 +42,9 @@ resources:
               - --config_file_name
               - ${var.config_file_name}
               - --job_run_date
-              - "{{job.start_time.iso_date}}"
+              - "{{job.trigger.time.iso_date}}"
               - --job_run_time
-              - "{{job.start_time.iso_datetime}}"
+              - "{{job.trigger.time.iso_datetime}}"
           environment_key: strava_athlete_profile_raw_environment
         - task_key: remove_secret_file
           depends_on:
