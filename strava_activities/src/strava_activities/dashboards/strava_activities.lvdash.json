@@ -4,21 +4,21 @@
       "name": "722af67b",
       "displayName": "strava_athlete_activities_cleanse",
       "queryLines": [
-        "SELECT * FROM data_engineering_prod.strava.strava_athlete_activities_cleanse"
+        "SELECT * FROM strava_athlete_activities_cleanse"
       ]
     },
     {
       "name": "424e66ac",
       "displayName": "strava_athlete_profile_cleanse",
       "queryLines": [
-        "SELECT * FROM data_engineering_prod.strava.strava_athlete_profile_cleanse"
+        "SELECT * FROM strava_athlete_profile_cleanse"
       ]
     },
     {
       "name": "b40dfeb5",
       "displayName": "cal_dim",
       "queryLines": [
-        "SELECT * FROM data_engineering_prod.strava.cal_dim"
+        "SELECT * FROM cal_dim"
       ]
     },
     {
@@ -33,13 +33,13 @@
         "    date(max(start_date_local)) as latest_strava_activity,\n",
         "    year(max(start_date_local)) as latest_strava_activity_year,\n",
         "    weekofyear(max(start_date_local)) as latest_strava_activity_week\n",
-        "  from data_engineering_prod.strava.strava_athlete_activities_cleanse\n",
+        "  from strava_athlete_activities_cleanse\n",
         "),\n",
         "missed_days as (\n",
         "  select\n",
         "    cd.*\n",
-        "  from data_engineering_prod.strava.cal_dim cd\n",
-        "  left join data_engineering_prod.strava.strava_athlete_activities_cleanse cl on cd.cal_date = date(cl.start_date_local)\n",
+        "  from cal_dim cd\n",
+        "  left join strava_athlete_activities_cleanse cl on cd.cal_date = date(cl.start_date_local)\n",
         "  where cl.start_date_local is null and cd.cal_date >= (select first_strava_activity from activity_start) and cd.cal_date <= (select latest_strava_activity from activity_start)\n",
         "),\n",
         "missed_weeks as (\n",
@@ -58,7 +58,7 @@
         "    min(cd.cal_date) as week_start_date,\n",
         "    max(cd.cal_date) as week_end_date\n",
         "  from missed_weeks mw \n",
-        "  inner join data_engineering_prod.strava.cal_dim cd on mw.cal_year = cd.cal_year and mw.cal_week_of_year = cd.cal_week_of_year\n",
+        "  inner join cal_dim cd on mw.cal_year = cd.cal_year and mw.cal_week_of_year = cd.cal_week_of_year\n",
         "  group by mw.cal_year, mw.cal_week_of_year\n",
         "  union all\n",
         "  select\n",
@@ -88,7 +88,7 @@
         "  count(1) as no_of_activities,\n",
         "  round(sum(cl.distance), 2) as total_distance_covered\n",
         "from get_streak_duration gs\n",
-        "inner join data_engineering_prod.strava.strava_athlete_activities_cleanse cl on date(cl.start_date_local) between gs.week_end_date and gs.streak_end_date\n",
+        "inner join strava_athlete_activities_cleanse cl on date(cl.start_date_local) between gs.week_end_date and gs.streak_end_date\n",
         "where gs.streak_end_date is not null\n",
         "group by week_end_date, streak_end_date\n",
         "order by no_of_activities desc\n",
@@ -754,6 +754,111 @@
             "x": 0,
             "y": 11,
             "width": 4,
+            "height": 5
+          }
+          },
+        {
+          "widget": {
+            "name": "average-heart-rate-vs-total-elevation-gain",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "722af67b",
+                  "fields": [
+                    {
+                      "name": "average_heart_rate",
+                      "expression": "`average_heart_rate`"
+                    },
+                    {
+                      "name": "elev_high",
+                      "expression": "`elev_high`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "average_heart_rate",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "elev_high",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "frame": {
+                "title": "Average Heart Rate vs Highest Elevation",
+                "showTitle": true,
+                "showDescription": false
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 16,
+            "width": 2,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "average-heart-rate-vs-max-speed",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "722af67b",
+                  "fields": [
+                    {
+                      "name": "max_heart_rate",
+                      "expression": "`max_heart_rate`"
+                    },
+                    {
+                      "name": "max_speed",
+                      "expression": "`max_speed`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "max_heart_rate",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "max_speed",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "frame": {
+                "title": "Max Heart Rate vs Max Speed",
+                "showTitle": true
+              }
+            }
+          },
+          "position": {
+            "x": 2,
+            "y": 16,
+            "width": 2,
             "height": 5
           }
         }
