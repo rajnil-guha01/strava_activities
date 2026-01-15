@@ -105,12 +105,23 @@ def main():
         .drop('rn')
     
     # Writing data into cleanse activities table using delta merge
-    cleanse_delta_table = DeltaTable.forName(sparkSession = spark, tableOrViewName = cleanse_table)
-    cleanse_delta_table.alias('target') \
-        .merge(cleanse_df.alias('source'), "target.id = source.id") \
-        .whenMatchedUpdateAll() \
-        .whenNotMatchedInsertAll() \
-        .execute()
+    # cleanse_delta_table = DeltaTable.forName(sparkSession = spark, tableOrViewName = cleanse_table)
+    # cleanse_delta_table.alias('target') \
+    #     .merge(cleanse_df.alias('source'), "target.id = source.id") \
+    #     .whenMatchedUpdateAll() \
+    #     .whenNotMatchedInsertAll() \
+    #     .execute()
+    cleanse_df.createOrReplaceTempView('source')
+    merge_sql = f"""
+        MERGE WITH SCHEMA EVOLUTION INTO {cleanse_table} AS target
+        USING source AS source
+        ON target.id = source.id
+        WHEN MATCHED THEN
+            UPDATE SET *
+        WHEN NOT MATCHED THEN
+            INSERT *
+    """
+    spark.sql(merge_sql)
     print(f"Cleansed athlete activities data merged to table: {cleanse_table} for run date: {run_date} ")
 
 if __name__ == '__main__':
