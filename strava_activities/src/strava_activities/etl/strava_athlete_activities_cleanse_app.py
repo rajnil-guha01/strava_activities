@@ -110,7 +110,6 @@ def main():
         .merge(cleanse_df.alias('source'), "target.id = source.id") \
         .whenMatchedUpdateAll() \
         .whenNotMatchedInsertAll() \
-        .option("mergeSchema", "true") \
         .execute()
     print(f"Cleansed athlete activities data merged to table: {cleanse_table} for run date: {run_date} ")
 
