@@ -92,7 +92,9 @@ def main():
             "cast(athlete_activities:upload_id_str as string) as upload_id",
             "cast(athlete_activities:utc_offset as int) as utc_offset",
             "cast(athlete_activities:visibility as string) as visibility",
-            "cast(athlete_activities:workout_type as int) as workout_type"
+            "cast(athlete_activities:workout_type as int) as workout_type",
+            "cast(athlete_activities:average_heartrate as double) as average_heart_rate",
+            "cast(athlete_activities:max_heartrate as double) as max_heart_rate",
         ) \
         .withColumn('run_date', lit(run_date).cast('date')) \
         .withColumn('run_time', lit(run_time).cast('timestamp'))
@@ -108,6 +110,7 @@ def main():
         .merge(cleanse_df.alias('source'), "target.id = source.id") \
         .whenMatchedUpdateAll() \
         .whenNotMatchedInsertAll() \
+        .option("mergeSchema", "true") \
         .execute()
     print(f"Cleansed athlete activities data merged to table: {cleanse_table} for run date: {run_date} ")
 
