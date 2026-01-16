@@ -2,6 +2,11 @@ resources:
   jobs:
     strava_athlete_profile:
       name: strava_athlete_profile
+      parameters:
+        - name: job_run_date
+          default: "{{job.trigger.time.iso_date}}"
+        - name: job_run_time
+          default: "{{job.trigger.time.iso_datetime}}"
       schedule:
         quartz_cron_expression: 40 0 10 ? * Sun
         timezone_id: Asia/Kolkata
@@ -30,9 +35,9 @@ resources:
               - --secret_path
               - ${var.secret_path}
               - --job_run_date
-              - "{{job.start_time.iso_date}}"
+              - "{{job.parameters.job_run_date}}"
               - --job_run_time
-              - "{{job.start_time.iso_datetime}}"
+              - "{{job.parameters.job_run_time}}"
           environment_key: strava_athlete_profile_raw_environment
         - task_key: strava_athlete_profile_cleanse
           depends_on:
@@ -44,9 +49,9 @@ resources:
               - --config_file_name
               - ${var.config_file_name}
               - --job_run_date
-              - "{{job.start_time.iso_date}}"
+              - "{{job.parameters.job_run_date}}"
               - --job_run_time
-              - "{{job.start_time.iso_datetime}}"
+              - "{{job.parameters.job_run_time}}"
           environment_key: strava_athlete_profile_raw_environment
         - task_key: remove_secret_file
           depends_on:

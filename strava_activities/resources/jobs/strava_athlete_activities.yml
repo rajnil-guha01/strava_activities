@@ -2,6 +2,11 @@ resources:
   jobs:
     strava_athlete_activities:
       name: strava_athlete_activities
+      parameters:
+        - name: job_run_date
+          default: "{{job.trigger.time.iso_date}}"
+        - name: job_run_time
+          default: "{{job.trigger.time.iso_datetime}}"
       tasks:
         - task_key: write_secret_to_file
           spark_python_task:
@@ -26,9 +31,9 @@ resources:
               - --secret_path
               - ${var.secret_path}
               - --job_run_date
-              - "{{job.start_time.iso_date}}"
+              - "{{job.parameters.job_run_date}}"
               - --job_run_time
-              - "{{job.start_time.iso_datetime}}"
+              - "{{job.parameters.job_run_time}}"
               - --load_type
               - ${var.load_type}
           environment_key: strava_athlete_profile_raw_environment
@@ -42,9 +47,9 @@ resources:
               - --config_file_name
               - ${var.config_file_name}
               - --job_run_date
-              - "{{job.start_time.iso_date}}"
+              - "{{job.parameters.job_run_date}}"
               - --job_run_time
-              - "{{job.start_time.iso_datetime}}"
+              - "{{job.parameters.job_run_time}}"
           environment_key: strava_athlete_profile_raw_environment
         - task_key: remove_secret_file
           depends_on:
