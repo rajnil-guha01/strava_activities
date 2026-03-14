@@ -11,6 +11,7 @@ import time
 import yaml
 import argparse
 import sys
+import json
 
 config = None
 
@@ -101,37 +102,11 @@ def main():
         .withColumn('run_time', lit(run_time).cast('timestamp'))
     
     # Use Databricks AI functions to generate athelete intelligence for each activity based on the activity data.
-    cleanse_df.createOrReplaceTempView('cdf')
-    intelligence_prediction_query = f"""
-        select
-        *,
-        ai_query(
-            "databricks-llama-4-maverick",
-            concat(
-            {athlete_intelligence_prompt},
-            "\naverage_speed: ",
-            average_speed,
-            "\nelev_high: ",
-            elev_high,
-            "\nelev_low: ",
-            elev_low,
-            "\nmax_speed: ",
-            max_speed,
-            "\nmoving_time: ",
-            moving_time,
-            "\nsport_type: ",
-            sport_type,
-            "\ntotal_elevation_gain: ",
-            total_elevation_gain,
-            "\naverage_heart_rate: ",
-            average_heart_rate,
-            "\nmax_heart_rate: ",
-            max_heart_rate
-            )
-        ) as athlete_intelligence
-        from cdf
-    """
-    intelligence_df = spark.sql(intelligence_prediction_query)
+    escaped_prompt = json.dumps(athlete_intelligence_prompt)
+    intelligence_df = cleanse_df.withColumn(
+        'athlete_intelligence',
+        expr(f"ai_query('databricks-gpt-oss-20b', concat({escaped_prompt}, 'average_speed: ', average_speed, 'elev_high: ', elev_high, 'elev_low: ', elev_low, 'max_speed: ', max_speed, 'moving_time: ', moving_time, 'sport_type: ', sport_type, 'total_elevation_gain: ', total_elevation_gain, 'average_heart_rate: ', average_heart_rate, 'max_heart_rate: ', max_heart_rate))")
+    )
     window_spec = Window.partitionBy('id').orderBy(col('start_date').desc(), col('run_time').desc())
     final_df = intelligence_df.withColumn('rn', row_number().over(window_spec)) \
         .filter("rn = 1") \
