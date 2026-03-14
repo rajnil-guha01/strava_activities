@@ -1,4 +1,5 @@
 from strava_activities.utils.common_utils import get_config_file_path
+from strava_activities.resources.prompts.all_prompts import athlete_intelligence_prompt
 
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import *
@@ -99,19 +100,45 @@ def main():
         .withColumn('run_date', lit(run_date).cast('date')) \
         .withColumn('run_time', lit(run_time).cast('timestamp'))
     
+    # Use Databricks AI functions to generate athelete intelligence for each activity based on the activity data.
+    cleanse_df.createOrReplaceTempView('cdf')
+    intelligence_prediction_query = f"""
+        select
+        *,
+        ai_query(
+            "databricks-llama-4-maverick",
+            concat(
+            "{athlete_intelligence_prompt}",
+            "\naverage_speed: ",
+            average_speed,
+            "\nelev_high: ",
+            elev_high,
+            "\nelev_low: ",
+            elev_low,
+            "\nmax_speed: ",
+            max_speed,
+            "\nmoving_time: ",
+            moving_time,
+            "\nsport_type: ",
+            sport_type,
+            "\ntotal_elevation_gain: ",
+            total_elevation_gain,
+            "\naverage_heart_rate: ",
+            average_heart_rate,
+            "\nmax_heart_rate: ",
+            max_heart_rate
+            )
+        ) as athlete_intelligence
+        from cdf
+    """
+    intelligence_df = spark.sql(intelligence_prediction_query)
     window_spec = Window.partitionBy('id').orderBy(col('start_date').desc(), col('run_time').desc())
-    cleanse_df = cleanse_df.withColumn('rn', row_number().over(window_spec)) \
+    final_df = intelligence_df.withColumn('rn', row_number().over(window_spec)) \
         .filter("rn = 1") \
         .drop('rn')
-    
-    # Writing data into cleanse activities table using delta merge
-    # cleanse_delta_table = DeltaTable.forName(sparkSession = spark, tableOrViewName = cleanse_table)
-    # cleanse_delta_table.alias('target') \
-    #     .merge(cleanse_df.alias('source'), "target.id = source.id") \
-    #     .whenMatchedUpdateAll() \
-    #     .whenNotMatchedInsertAll() \
-    #     .execute()
-    cleanse_df.createOrReplaceTempView('source')
+
+    # Load data into cleanse table.
+    final_df.createOrReplaceTempView('source')
     merge_sql = f"""
         MERGE WITH SCHEMA EVOLUTION INTO {cleanse_table} AS target
         USING source AS source
