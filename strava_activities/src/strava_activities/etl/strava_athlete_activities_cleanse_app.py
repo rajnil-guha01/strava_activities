@@ -108,7 +108,7 @@ def main():
         ai_query(
             "databricks-llama-4-maverick",
             concat(
-            "{athlete_intelligence_prompt}",
+            {athlete_intelligence_prompt},
             "\naverage_speed: ",
             average_speed,
             "\nelev_high: ",
